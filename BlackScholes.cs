@@ -64,7 +64,32 @@ namespace Finance
         {
             var (d1, _) = ComputeD1D2(S, K, r, sigma, T);
             return N(d1) - 1.0;
-        }
+  
+    // Probability density function of standard normal distribution
+    private static double Pdf(double x)
+    {
+        return 1.0 / Math.Sqrt(2.0 * Math.PI) * Math.Exp(-0.5 * x * x);
+    }
+
+    // Vega of a European call option
+    public static double CallVega(double S, double K, double r, double sigma, double T)
+    {
+        var (d1, d2) = ComputeD1D2(S, K, r, sigma, T);
+        return S * Math.Sqrt(T) * Pdf(d1);
+    }
+    // Vega of a European put option (same as call)
+    public static double PutVega(double S, double K, double r, double sigma, double T) => CallVega(S, K, r, sigma, T);
+
+    // Gamma of a European call option
+    public static double CallGamma(double S, double K, double r, double sigma, double T)
+    {
+        var (d1, d2) = ComputeD1D2(S, K, r, sigma, T);
+        return Pdf(d1) / (S * sigma * Math.Sqrt(T));
+    }
+    // Gamma of a European put option (same as call)
+    public static double PutGamma(double S, double K, double r, double sigma, double T) => CallGamma(S, K, r, sigma, T);
+
+      }
 
         // Example usage in main program
         public static void Main(string[] args)
@@ -114,6 +139,20 @@ namespace Finance
     {
         public double S { get; }
         public double K { get; }
+            public double Vega()
+    {
+        return IsCall
+            ? BlackScholes.CallVega(S, K, R, Sigma, T)
+            : BlackScholes.PutVega(S, K, R, Sigma, T);
+    }
+
+    public double Gamma()
+    {
+        return IsCall
+            ? BlackScholes.CallGamma(S, K, R, Sigma, T)
+            : BlackScholes.PutGamma(S, K, R, Sigma, T);
+    }
+
         public double R { get; }
         public double Sigma { get; }
         public double T { get; }
